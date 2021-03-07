@@ -43,6 +43,8 @@ In particular, I've seen multiple reports of faculty being investigated after re
 Additionally, I follow a social media community called AcademicChatter which is an academia-focused Twitter account and I quite frequently notice tweets or retweets that mention mental health, either in the text or by hashtags. So this was the impetus for my choice of topic for this week's independent sentiment analysis assignment.
 
 ---
+background-image: url(img/yolo-cat.jpeg)
+---
 
 #GUIDING QUESTIONS
 &lt;br/&gt;
@@ -162,7 +164,7 @@ summary_nrc &lt;- sentiment_nrc %&gt;%
 
 
 ```r
-summary_vader &lt;- vader_df(chatter_text$text) %&gt;% 
+*summary_vader &lt;- vader_df(chatter_text$text) %&gt;%
   select(text, compound, pos, neg, neu)
 ```
 &lt;table&gt;
@@ -205,8 +207,8 @@ summary_vader &lt;- vader_df(chatter_text$text) %&gt;%
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; 1052 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 544 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 945 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 492 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -228,14 +230,14 @@ summary_vader &lt;- vader_df(chatter_text$text) %&gt;%
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; 224 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 486 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 163 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 342 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 380 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 326 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 155 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 538 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 221 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 487 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 171 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 316 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 353 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 305 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 168 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 510 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -247,8 +249,8 @@ summary_vader &lt;- vader_df(chatter_text$text) %&gt;%
 
 ```r
 vader_results &lt;- summary_vader %&gt;% 
-  mutate(sentiment = ifelse(compound &gt; 0, "positive", 
-                            ifelse(compound &lt; 0, "negative", "neutral"))) %&gt;% 
+* mutate(sentiment = ifelse(compound &gt; 0, "positive",
+*                           ifelse(compound &lt; 0, "negative", "neutral"))) %&gt;%
   count(sentiment, sort = TRUE) %&gt;% 
   spread(sentiment, n) %&gt;% 
   relocate(positive)
@@ -288,8 +290,8 @@ vader_results &lt;- summary_vader %&gt;%
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; 1052 &lt;/td&gt;
-   &lt;td style="text-align:center;"&gt; 544 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 945 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 492 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -334,7 +336,7 @@ So, let's look at VADER. Recalling that VADER gives a score for the tweet as who
 
 ```r
 positiveTweet &lt;- summary_vader %&gt;% 
-  filter(compound &gt; 0.75) %&gt;% 
+* filter(compound &gt; 0.75) %&gt;%
   mutate(tweet = text) %&gt;% 
   sample_n(3) %&gt;%
   select(tweet)
@@ -349,29 +351,26 @@ positiveTweet &lt;- summary_vader %&gt;%
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; This week, let's make gratitude our #FridayFeeling and tell some amazing people on #AcademicTwitter how immensely grateful we are for them
-
-Who are you grateful for? Tag them!😃
-
-Pls don't hold back! We can never have too much gratitude ❤️
-
-#AcademicMentalHealth #AcademicChatter https://t.co/SCTIl6cEFP &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; Grateful to be included in this group of amazing people working to promote #AcademicMentalHealth 🥰 https://t.co/6JVvczR7ZP &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; The definition of discouraging is having to turn down really brilliant and exciting opportunities for collaboration because you don't know if you'll even have an academic job by then 🙄 #AcademicTwitter #AcademicMentalHealth #academicjobs &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; Let's try -- Name tags, but for our feelings or current state of mind.
+
+If nothing else, it will help us focus on how we're feeling today, even if for a few minutes 😊
+
+Please complete the sentence in the image
+
+#AcademicChatter #AcademicMentalHealth 
+@OpenAcademics @DragonflyMH https://t.co/QK9VQwopMH &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; Any day I am able to go for a run is a great day. #letsgo 
-
-#feelinggrateful #running #runningman #runningcommunity #runningmotivation #thegoodlife #happyplace #relationshipwithself #mentalhealth #mytherapy #selflove #selfcare #phdlife #winterrunning #vivirmivida #glowup #peace https://t.co/pb5WsKHpgL &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; Really enjoyed chairing this session. Thanks to everyone that came along 😊 #AcademicMentalHealth #phdchat #phdlife https://t.co/q5I9nG8olm &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 ]
 ]
 
----
-background-image: url(img/yolo-cat.jpeg)
 ---
 
 # REFLECTING ON THE RESULTS
@@ -434,7 +433,7 @@ Thanks for listening to my presentation. This presentation uses the R markdown X
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="libs/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "googlecode",
+"highlightStyle": "default",
 "highlightLines": true,
 "highlightLanguage": "r",
 "countIncrementalSlides": false,
