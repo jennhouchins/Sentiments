@@ -13,7 +13,7 @@
         times: 2
       seal: true                          # false: custom title slide
       nature:
-        highlightStyle: default         # highlighting syntax for code
+        highlightStyle: googlecode         # highlighting syntax for code
         highlightLines: true               # true: enables code line highlighting 
         highlightLanguage: ["r"]           # languages to highlight
         countIncrementalSlides: false      # false: disables counting of incremental slides
@@ -160,7 +160,7 @@ summary_nrc <- sentiment_nrc %>%
 **Then I processed the tweets for sentiment using the VADER lexicon. This uses much less code because we don't have to tokenize the tweets first!! **
 
 ```{r vader-chunk, results='markup', echo=TRUE, cache=TRUE}
-summary_vader <- vader_df(chatter_text$text) %>% #<<
+summary_vader <- vader_df(chatter_text$text) %>% 
   select(text, compound, pos, neg, neu)
 ```
 ```{r vader-ex, echo=FALSE}
@@ -200,8 +200,8 @@ knitr::kable(tweet_emots, format="html", align = "cccccccc")
 ```{r vader-results, echo=TRUE}
 
 vader_results <- summary_vader %>% 
-  mutate(sentiment = ifelse(compound > 0, "positive", #<<
-                            ifelse(compound < 0, "negative", "neutral"))) %>% #<<
+  mutate(sentiment = ifelse(compound > 0, "positive", 
+                            ifelse(compound < 0, "negative", "neutral"))) %>% 
   count(sentiment, sort = TRUE) %>% 
   spread(sentiment, n) %>% 
   relocate(positive)
@@ -248,7 +248,7 @@ So, let's look at VADER. Recalling that VADER gives a score for the tweet as who
 ```{r most-pos, echo=TRUE, cache=TRUE}
 
 positiveTweet <- summary_vader %>% 
-  filter(compound > 0.75) %>% #<<
+  filter(compound > 0.75) %>% 
   mutate(tweet = text) %>% 
   sample_n(3) %>%
   select(tweet)
