@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Academic Mental Health on Twitter</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Jennifer Houchins" />
+    <meta name="date" content="2021-03-07" />
+    <script src="libs/header-attrs-2.7/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <link href="libs/panelset-0.2.6/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset-0.2.6/panelset.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Academic Mental Health on Twitter
+## <strong><small>Sentiment Analysis in R</small></strong>
+### Jennifer Houchins
+### March 07, 2021
+
+---
+
+class: inverse, center, middle
+
+
+
+
+.font130[I have seen multiple news articles about **toxic academic/research environments** leading to **graduate student suicides**.] 
+.font125[&lt;br/&gt;&lt;br/&gt;For example, see this InsideHigherEd article:&lt;br/&gt; &lt;https://www.insidehighered.com/news/2021/03/03/u-florida-suspends-professor-blamed-students-suicide?mc_cid=96abfba41b&amp;mc_eid=152b28524a&gt;]
+
+
+.font130[I have also been seeing **mental health related tweets** in the Twitter community of **AcademicChatter**. So, I decided to investigate these tweets for my sentiment analysis...]
+
+???
+
+To give you a bit of context for why I chose to do this particular sentiment analysis... I've been seeing reports (mostly via sites like InsideHigherEd) that suggest that academia is producing some very toxic environments with some very detrimental results.
+
+In particular, I've seen multiple reports of faculty being investigated after reports that they created a toxic research environment that resulted in graduate student suicides. One of these was just posted last week when I started this analysis! I've shared it here.
+
+Additionally, I follow a social media community called AcademicChatter which is an academia-focused Twitter account and I quite frequently notice tweets or retweets that mention mental health, either in the text or by hashtags. So this was the impetus for my choice of topic for this week's independent sentiment analysis assignment.
+
+---
+
+#GUIDING QUESTIONS
+&lt;br/&gt;
+???
+
+I had two guiding questions for this independent analysis
+--
+&lt;br/&gt;
+## 1. What sentiments are most prevalent in academic mental health related tweets?
+
+???
+
+The first was 
+
+What sentiments are most prevalent in academic mental health related tweets?
+
+--
+&lt;br/&gt;
+## 2. How do sentiment analysis results for these tweets differ by lexicon?
+
+???
+
+and the second was
+
+- How do these results differ across lexicons?
+
+---
+# SEARCHING TWITTER
+
+.font95[**To search for relevant tweets, I set up a dictionary of search terms that used conditional logic (e.g., AND, OR) with various combinations of mental health and AcademicChatter/AcademicTwitter. It looked like this:**]
+&lt;br/&gt;
+&lt;br/&gt;
+
+```r
+ac_dictionary &lt;- c("#mentalhealth AND #AcademicChatter OR academicchatter",
+                   "#mentalhealth AND #AcademicTwitter OR academictwitter",
+                   "#mentalhealth AND #PhD OR #phdlife OR #phdchat",
+                   '"mental health" AND #AcademicChatter',
+                   '"mental health" AND #AcademicTwitter',
+                   '"mental health" AND @AcademicChatter',
+                   '"mental health" AND "phd students"',
+                   "#AcademicMentalHealth OR academicmentalhealth")
+```
+
+???
+
+The first thing I needed to do was get some tweets to analyze so I built a dictionary various combinations of hashtags, search terms, and users to search Twitter. These focused on mental health and either AcademicChatter or Academic Twitter. Many of the hashtags I used are based on those I see frequently used in AcademicChatter tweets. AcademicChatter is an account that I follow on Twitter.
+
+---
+# SENTIMENT ANALYSIS
+&lt;br/&gt;
+### For my analysis, I used two lexicons:
+&lt;br/&gt;
+
+* **The NRC Emotion lexicon** (&lt;https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm&gt;)&lt;br/&gt;&lt;br/&gt;
+
+* **The Valence Aware Dictionary and sEntiment Reasoner (VADER)
+ lexicon** (&lt;https://pypi.org/project/vaderSentiment/&gt;)
+
+
+???
+
+For this sentiment analysis project, I used two lexicons. The first is NRC.
+
+You're probably familiar with NRC from our assigned readings and Unit 2 Walkthrough. It is a list of English words with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive)
+
+The second is the Valence Aware Dictionary and sEntiment Reasoner lexicon or VADER. Soraya shared this lexicon in our discussion forums. It's a lexicon and rule-based sentiment analysis tool developed by Hutto &amp; Gilbert in 2014 that is specifically attuned to sentiments expressed in social media. It also claims to work well on texts from other domains. Therefore, it seemed like an appropriate choice to use to analyze tweets.
+
+I also thought this would make for an interesting comparison. While NRC focuses on unigrams, the VADER package gives sentiment scores (positive, negative, and neutral) for the text (of the tweet) as a whole.
+
+---
+# ANALYSING THE TWEETS
+.panelset[
+.panel[.panel-name[TWEETS]
+**I read the saved tweets from my Excel data file and tokenized the text for analysis.**
+
+
+```r
+datafilePath &lt;- "data/academicmentalhealth_tweets.xlsx"
+mh_tweets &lt;- read_xlsx(datafilePath)
+
+chatter_text &lt;-
+  mh_tweets %&gt;%
+  filter(lang == "en") %&gt;%
+  select(screen_name, created_at, text) 
+
+tweet_tokens &lt;- chatter_text %&gt;%
+  unnest_tokens(output = word, 
+                input = text, 
+                token = "tweets") %&gt;% 
+  anti_join(stop_words, by = "word")
+```
+
+```
+## Using `to_lower = TRUE` with `token = 'tweets'` may not preserve URLs.
+```
+]
+.panel[.panel-name[NRC]
+**Then I processed the tweets to get the emotions and sentiments using the NRC lexicon.**
+
+```r
+nrc &lt;- get_sentiments("nrc")
+sentiment_nrc &lt;- inner_join(tweet_tokens, nrc, by = "word")
+
+summary_nrc &lt;- sentiment_nrc %&gt;% 
+  count(sentiment, sort = TRUE) %&gt;% 
+  spread(sentiment, n) %&gt;%
+  mutate(lexicon = "nrc") %&gt;%
+  relocate(lexicon)
+```
+]
+
+.panel[.panel-name[VADER]
+**Then I processed the tweets for sentiment using the VADER lexicon. This uses much less code because we don't have to tokenize the tweets first!! **
+
+
+```r
+summary_vader &lt;- vader_df(chatter_text$text) %&gt;% 
+  select(text, compound, pos, neg, neu)
+```
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; text &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; compound &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; pos &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; neg &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; neu &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; It's currently #QUBeWell University Mental Health Week.  Mental health is an incredibly important thing to be aware of, take care of, and asking for help and support if you need it.  #phd #AcademicChatter #AcademicMentalHealth #mentalhealth #MentalHealthMatters @QUBelfast &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.866 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.245 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 0.755 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+]
+
+---
+
+# THE RESULTS
+.panelset[
+.panel[.panel-name[NRC]
+**NRC results suggest that the tweets for academic mental health are positive overall. This seems to jive with the highest expressed emotion which is trust.**
+&lt;br/&gt;
+&lt;br/&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; positive &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; negative &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 1052 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 544 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;br/&gt;
+&lt;br/&gt;
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; anger &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; anticipation &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; disgust &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; fear &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; joy &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; sadness &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; surprise &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; trust &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 224 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 486 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 163 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 342 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 380 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 326 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 155 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 538 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+.panel[.panel-name[VADER]
+**We have to do a little processing to get comparable results from VADER. VADER assigns positive, negative, and neutral scores to each tweet and then normalizes those to provide a compound score. This is what we'll look at.**
+
+
+```r
+vader_results &lt;- summary_vader %&gt;% 
+  mutate(sentiment = ifelse(compound &gt; 0, "positive", 
+                            ifelse(compound &lt; 0, "negative", "neutral"))) %&gt;% 
+  count(sentiment, sort = TRUE) %&gt;% 
+  spread(sentiment, n) %&gt;% 
+  relocate(positive)
+```
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; positive &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; negative &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; neutral &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 457 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 172 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 94 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+.panel[.panel-name[COMPARISON]
+&lt;br/&gt;
+.center[**Let's look at a side-by-side comparison of the sentiments.**]
+&lt;br/&gt;
+&lt;br/&gt;
+.pull-left[
+
+&lt;table&gt;
+&lt;caption&gt;NRC Sentiments&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; positive &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; negative &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 1052 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 544 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+.pull-right[
+
+&lt;table&gt;
+&lt;caption&gt;VADER Sentiments&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; positive &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; negative &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; neutral &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; 457 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 172 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 94 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+]
+]
+
+???
+NRC results suggest that the tweets for academic mental health are more positive than negative and the most frequently expressed emotion is trust.
+
+So, let's look at VADER. Recalling that VADER gives a score for the tweet as whole rather than using unigrams, we know that the results produced are very different... So, I created a sentiment column in my summary_vader dataframe which contains the value positive if the compound score is greater than 0, negative if it's less than 0, and neutral otherwise. Then we'll count the sentiment to get results that are comparable to those using the NRC lexicon.
+
+---
+# POSITIVE TWEETS
+
+**Using the VADER results, we can see a sampling of the most positive tweets...**
+&lt;br/&gt;
+.panelset[
+.panel[.panel-name[R Code]
+
+```r
+positiveTweet &lt;- summary_vader %&gt;% 
+  filter(compound &gt; 0.75) %&gt;% 
+  mutate(tweet = text) %&gt;% 
+  sample_n(3) %&gt;%
+  select(tweet)
+```
+]
+.panel[.panel-name[Results]
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; tweet &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; This week, let's make gratitude our #FridayFeeling and tell some amazing people on #AcademicTwitter how immensely grateful we are for them
+
+Who are you grateful for? Tag them!😃
+
+Pls don't hold back! We can never have too much gratitude ❤️
+
+#AcademicMentalHealth #AcademicChatter https://t.co/SCTIl6cEFP &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; The definition of discouraging is having to turn down really brilliant and exciting opportunities for collaboration because you don't know if you'll even have an academic job by then 🙄 #AcademicTwitter #AcademicMentalHealth #academicjobs &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; Any day I am able to go for a run is a great day. #letsgo 
+
+#feelinggrateful #running #runningman #runningcommunity #runningmotivation #thegoodlife #happyplace #relationshipwithself #mentalhealth #mytherapy #selflove #selfcare #phdlife #winterrunning #vivirmivida #glowup #peace https://t.co/pb5WsKHpgL &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+]
+
+---
+
+# REFLECTING ON THE RESULTS
+## I had two concerns when I began this analysis...
+&lt;br/&gt;
+* .font150[Potential differences in results based on lexicons.]
+
+
+???
+Initially, I was concerned about the potential differences in the overall results based on how differently these lexicons treat the sentiment analysis. It would seem like NRC could mis-classify sentiment because it processes things as unigrams but these results suggest that isn't the case.
+
+--
+
+* .font150[Expectation of mostly negative conversations about academic mental health.]
+
+???
+
+I really did expect the tweets regarding academic mental health to be less positive, but it seems that the AcademicChatter Twitter community has fostered a measure of trust (as indicated by the NRC lexion's results). This may suggest that the tweets are indicative of a supportive community rather than a sounding board for complaints.
+
+--
+&lt;br/&gt;
+&lt;br/&gt;
+&lt;br/&gt;
+&lt;br/&gt;
+.center[.font150[**Neither of these turned out to be the case!**]]
+
+???
+
+I was pleasantly surprised that not only did the two lexicons produce consistent results despite the differences in the way they work, but also that the tweets were positive overall.
+
+---
+
+class: middle, inverse
+
+.pull-left[
+&lt;br/&gt;
+# **Thank you!**
+&lt;br/&gt;
+If you'd like to learn more about the techniques used in this
+presentation you can get the R project from my
+Github repo:
+&lt;https://github.com/jennhouchins/Sentiments.git&gt;
+&lt;br/&gt;
+&lt;br/&gt;
+&lt;br/&gt;
+**Follow me on Twitter: @TooSweetGeek** 
+]
+
+.pull-right[
+.center[
+&lt;img style="border-radius: 50%;" src="img/jenn.jpg" width="225px"/&gt;
+
+]
+]
+
+???
+
+Thanks for listening to my presentation. This presentation uses the R markdown Xaringan presentation package. One of the things I like about this package is the moon_reader addin for R Studio that let me see the slides update in the viewer pane as I was working. This is something that I couldn't do with the Reveal.js package and it was kind of nice to see the slides update real-time rather than having to constantly knit to see my changes. The thing I missed from that package was the ease of animating slide transitions, but there are always trade-offs.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="libs/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "googlecode",
+"highlightLines": true,
+"highlightLanguage": "r",
+"countIncrementalSlides": false,
+"ratio": "4:3"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
