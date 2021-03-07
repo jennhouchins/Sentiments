@@ -8,9 +8,6 @@
       css: [default, metropolis, metropolis-fonts]    
       lib_dir: libs                        # creates directory for libraries
       chakra: libs/remark-latest.min.js
-      yolo:
-        img: img/yolo-cat.jpeg
-        times: 2
       seal: true                          # false: custom title slide
       nature:
         highlightStyle: googlecode         # highlighting syntax for code
