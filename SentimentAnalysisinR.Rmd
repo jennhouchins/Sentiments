@@ -35,6 +35,15 @@ pacman::p_load(pacman, tidyverse, tidytext, wordcloud2, readxl,
 ```{r xaringan-panelset, echo=FALSE}
 xaringanExtra::use_panelset()
 ```
+```{r xaringanExtra-clipboard, echo=FALSE}
+htmltools::tagList(
+  xaringanExtra::use_clipboard(
+    button_text = "<i class=\"fa fa-clipboard\"></i>",
+    success_text = "<i class=\"fa fa-check\" style=\"color: #90BE6D\"></i>",
+  ),
+  rmarkdown::html_dependency_font_awesome()
+)
+```
 .font130[I have seen multiple news articles about **toxic academic/research environments** leading to **graduate student suicides**.] 
 .font125[<br/><br/>For example, see this InsideHigherEd article:<br/> <https://www.insidehighered.com/news/2021/03/03/u-florida-suspends-professor-blamed-students-suicide?mc_cid=96abfba41b&mc_eid=152b28524a>]
 
