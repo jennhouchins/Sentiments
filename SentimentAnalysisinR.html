@@ -70,6 +70,8 @@ and the second was
 - How do these results differ across lexicons?
 
 ---
+background-image: url(img/yolo-cat.jpg)
+---
 # SEARCHING TWITTER
 
 .font95[**To search for relevant tweets, I set up a dictionary of search terms that used conditional logic (e.g., AND, OR) with various combinations of mental health and AcademicChatter/AcademicTwitter. It looked like this:**]
@@ -121,7 +123,7 @@ I also thought this would make for an interesting comparison. While NRC focuses 
 
 
 ```r
-datafilePath &lt;- "data/academicmentalhealth_tweets.xlsx"
+datafilePath &lt;- "data/academicmentalhealth_tweets_v2.xlsx"
 mh_tweets &lt;- read_xlsx(datafilePath)
 
 chatter_text &lt;-
@@ -160,7 +162,7 @@ summary_nrc &lt;- sentiment_nrc %&gt;%
 
 
 ```r
-summary_vader &lt;- vader_df(chatter_text$text) %&gt;% 
+*summary_vader &lt;- vader_df(chatter_text$text) %&gt;%
   select(text, compound, pos, neg, neu)
 ```
 &lt;table&gt;
@@ -245,8 +247,8 @@ summary_vader &lt;- vader_df(chatter_text$text) %&gt;%
 
 ```r
 vader_results &lt;- summary_vader %&gt;% 
-  mutate(sentiment = ifelse(compound &gt; 0, "positive", 
-                            ifelse(compound &lt; 0, "negative", "neutral"))) %&gt;% 
+* mutate(sentiment = ifelse(compound &gt; 0, "positive",
+*                           ifelse(compound &lt; 0, "negative", "neutral"))) %&gt;%
   count(sentiment, sort = TRUE) %&gt;% 
   spread(sentiment, n) %&gt;% 
   relocate(positive)
@@ -332,7 +334,7 @@ So, let's look at VADER. Recalling that VADER gives a score for the tweet as who
 
 ```r
 positiveTweet &lt;- summary_vader %&gt;% 
-  filter(compound &gt; 0.75) %&gt;% 
+* filter(compound &gt; 0.9) %&gt;%
   mutate(tweet = text) %&gt;% 
   sample_n(3) %&gt;%
   select(tweet)
@@ -356,12 +358,16 @@ Pls don't hold back! We can never have too much gratitude ❤️
 #AcademicMentalHealth #AcademicChatter https://t.co/SCTIl6cEFP &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; The definition of discouraging is having to turn down really brilliant and exciting opportunities for collaboration because you don't know if you'll even have an academic job by then 🙄 #AcademicTwitter #AcademicMentalHealth #academicjobs &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; Finally managed to get a plan together for my MSc research proposal. I've been drowning in academia, but now it's 01:25 and I find myself riding the wave! It just clicked and I'm honestly euphoric!
+
+ #AcademicTwitter #AcademicMentalHealth &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:center;"&gt; Any day I am able to go for a run is a great day. #letsgo 
+   &lt;td style="text-align:center;"&gt; Not everyone has to be your competition, they can be your inspiration.
+You make that choice.
 
-#feelinggrateful #running #runningman #runningcommunity #runningmotivation #thegoodlife #happyplace #relationshipwithself #mentalhealth #mytherapy #selflove #selfcare #phdlife #winterrunning #vivirmivida #glowup #peace https://t.co/pb5WsKHpgL &lt;/td&gt;
+Be ready to learn and grow, and allow others to help guide you.
+#AcademicMentalHealth #inspiration #thoughtoftheday #TuesdayMotivation &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
