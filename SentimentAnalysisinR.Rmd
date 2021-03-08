@@ -13,7 +13,7 @@
         times: 1
       seal: true                          # false: custom title slide
       nature:
-        highlightStyle: googlecode         # highlighting syntax for code
+        highlightStyle: default         # highlighting syntax for code
         highlightLines: true               # true: enables code line highlighting 
         highlightLanguage: ["r"]           # languages to highlight
         countIncrementalSlides: false      # false: disables counting of incremental slides
